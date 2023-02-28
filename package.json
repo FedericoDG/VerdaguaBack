@@ -2,12 +2,13 @@
   "name": "tourism_agency",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/app.js",
+    "dev": "nodemon index.js",
     "reset": "sh db_reset.sh",
     "seed": "sh db_seed.sh",
-    "resetseed": "sh db_reset_seed.sh"
+    "resetseed": "sh db_reset_seed.sh",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
