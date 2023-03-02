@@ -11,6 +11,7 @@ const contractRoutes = require('./contract.routes');
 const institutionRoutes = require('./institution.routes');
 const installmentRoutes = require('./installment.routes');
 const settingsRoutes = require('./settings.routes');
+const balanceRoutes = require('./balance.routes');
 
 router.use('/auth', authRoutes);
 router.use('/roles', roleRoutes);
@@ -21,5 +22,6 @@ router.use('/contracts', contractRoutes);
 router.use('/institutions', institutionRoutes);
 router.use('/installments', installmentRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/balance', balanceRoutes);
 
 module.exports = router;

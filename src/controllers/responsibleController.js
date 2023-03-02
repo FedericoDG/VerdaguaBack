@@ -62,7 +62,11 @@ module.exports = {
       let responsibles;
       if (documento) {
         responsibles = await Responsable.findAll({
-          where: { documento },
+          where: {
+            documento: {
+              [Op.like]: `%${documento}%`
+            }
+          },
           order: [['id', 'DESC']]
         });
       }

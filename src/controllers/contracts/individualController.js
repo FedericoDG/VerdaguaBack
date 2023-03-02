@@ -1,7 +1,16 @@
 const { SUPER } = require('../../constants/roles');
-const { ContratoIndividual, ContratoGeneral, Institucion, Pasajero, Parametro, Cuota, Movimiento } = require('../../database/models');
+const {
+  ContratoIndividual,
+  ContratoGeneral,
+  Institucion,
+  Pasajero,
+  Parametro,
+  Cuota,
+  Movimiento,
+  Responsable
+} = require('../../database/models');
 const { validationResult } = require('express-validator');
-const { Op, where } = require('sequelize');
+const { Op } = require('sequelize');
 
 module.exports = {
   get: async (req, res) => {
@@ -87,7 +96,7 @@ module.exports = {
   },
   getByQuery: async (req, res) => {
     try {
-      const { code, document, list } = req.query;
+      const { code, document, list, lastname } = req.query;
       let individualContracts;
       if (code) {
         individualContracts = await ContratoIndividual.findAll({
@@ -136,6 +145,52 @@ module.exports = {
           ],
           order: [['id', 'DESC']]
         });
+      }
+      if (lastname) {
+        console.log('***************************');
+        console.log(lastname);
+        console.log('***************************');
+        const passengers = await Pasajero.findAll({
+          where: {
+            apellido: {
+              [Op.like]: `%${lastname}%`
+            }
+          },
+          attributes: ['id'],
+          order: [['id', 'DESC']]
+        });
+        individualContracts = await Promise.all(
+          passengers.map(
+            async (el) =>
+              await ContratoIndividual.findAll({
+                where: {
+                  id_pasajero: el.id
+                },
+                include: [
+                  {
+                    model: ContratoGeneral,
+                    as: 'contrato_general',
+                    include: {
+                      model: Institucion,
+                      as: 'institucion'
+                    }
+                  },
+                  {
+                    model: Pasajero,
+                    as: 'pasajero'
+                  }
+                ],
+                order: [['id', 'DESC']]
+              })
+          )
+        );
+        individualContracts = individualContracts.flat();
+        console.log(individualContracts);
+        /* return res.status(200).json({
+          status: 'success',
+          msg: 'Contratos recuperados',
+          data: []
+        }); */
       }
       if (list) {
         const parsedList = JSON.parse(list);
@@ -289,7 +344,26 @@ module.exports = {
     const seniaYCuotas = await Cuota.findAll({
       where: {
         id_contrato_individual: id
-      }
+      },
+      include: [
+        {
+          model: ContratoIndividual,
+          as: 'contrato_individual',
+          include: [
+            {
+              model: Pasajero,
+              as: 'pasajero',
+              include: [
+                {
+                  model: Responsable,
+                  as: 'responsable'
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      order: [['numero', 'ASC']]
     });
     res.status(200).json({
       status: 'success',

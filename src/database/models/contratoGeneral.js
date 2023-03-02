@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.CHAR(6),
         allowNull: false
       },
+      contract_url: {
+        type: DataTypes.CHAR(80),
+        allowNull: true
+      },
       estado: {
         type: DataTypes.ENUM('vigente', 'terminado', 'cancelado'),
         allowNull: false
