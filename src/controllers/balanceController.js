@@ -1,3 +1,4 @@
+const { SUPER } = require('../constants/roles');
 const { Movimiento } = require('../database/models');
 const { Op } = require('sequelize');
 
@@ -8,7 +9,8 @@ module.exports = {
     const start = from.concat(' 00:00:00');
     const end = to.concat(' 23:59:59');
 
-    const where = {
+    let where = {
+      id_usuario: req.user.id,
       created_at: {
         [Op.and]: {
           [Op.gte]: start,
@@ -19,6 +21,21 @@ module.exports = {
         [Op.like]: `%${info}%`
       }
     };
+
+    if (req.user.rol.name === SUPER) {
+      where = {
+        created_at: {
+          [Op.and]: {
+            [Op.gte]: start,
+            [Op.lte]: end
+          }
+        },
+        info: {
+          [Op.like]: `%${info}%`
+        }
+      };
+    }
+
     const movements = await Movimiento.findAll({ where, order: [['id', 'DESC']] });
 
     const incomes = movements.filter((el) => el.tipo === 'ingreso');
@@ -28,6 +45,7 @@ module.exports = {
     const credit = incomes.filter((el) => el.forma_pago === 'credito').reduce((acc, el) => acc + Number(el.importe), 0);
     const transference = incomes.filter((el) => el.forma_pago === 'transferencia').reduce((acc, el) => acc + Number(el.importe), 0);
     const mercadopago = incomes.filter((el) => el.forma_pago === 'mercadopago').reduce((acc, el) => acc + Number(el.importe), 0);
+
     const outcomes = movements.filter((el) => el.tipo === 'egreso');
     const totalOutcomes = outcomes.reduce((acc, el) => acc + Number(el.importe), 0);
 
@@ -52,8 +70,7 @@ module.exports = {
     });
   },
   create: async (req, res) => {
-    console.log(req.body);
-    // await Movimiento.create(req.body);
+    await Movimiento.create({ ...req.body, id_usuario: req.user.id });
     res.status(200).json({
       status: 'success',
       msg: 'Movimiento cargado'

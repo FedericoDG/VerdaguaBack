@@ -36,6 +36,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'id_movimiento'
     });
   };
+  movimiento.associate = (models) => {
+    movimiento.belongsTo(models.Usuario, {
+      as: 'usuario',
+      foreignKey: 'id_usuario'
+    });
+  };
 
   return movimiento;
 };

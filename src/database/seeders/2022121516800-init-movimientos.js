@@ -8,20 +8,35 @@ module.exports = {
         importe: 60000,
         tipo: 'ingreso',
         forma_pago: 'efectivo',
-        created_at: new Date(),
-        updated_at: new Date()
+        info: '',
+        id_usuario: '1',
+        created_at: '2023-02-28 12:00:00',
+        updated_at: '2023-02-28 12:00:00'
       },
       {
         importe: 15000,
         tipo: 'ingreso',
         forma_pago: 'credito',
-        created_at: new Date(),
-        updated_at: new Date()
+        info: '',
+        id_usuario: '1',
+        created_at: '2023-02-28 12:00:00',
+        updated_at: '2023-02-28 12:00:00'
       },
       {
         importe: 60000,
         tipo: 'ingreso',
         forma_pago: 'efectivo',
+        info: '',
+        id_usuario: '1',
+        created_at: '2023-02-28 12:00:00',
+        updated_at: '2023-02-28 12:00:00'
+      },
+      {
+        importe: 15000,
+        tipo: 'ingreso',
+        forma_pago: 'credito',
+        info: '',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -29,13 +44,8 @@ module.exports = {
         importe: 15000,
         tipo: 'ingreso',
         forma_pago: 'credito',
-        created_at: new Date(),
-        updated_at: new Date()
-      },
-      {
-        importe: 15000,
-        tipo: 'ingreso',
-        forma_pago: 'credito',
+        info: '',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -43,6 +53,8 @@ module.exports = {
         importe: 40000,
         tipo: 'ingreso',
         forma_pago: 'debito',
+        info: '',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -50,6 +62,8 @@ module.exports = {
         importe: 20000,
         tipo: 'ingreso',
         forma_pago: 'efectivo',
+        info: '',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -57,6 +71,8 @@ module.exports = {
         importe: 20000,
         tipo: 'ingreso',
         forma_pago: 'efectivo',
+        info: '',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -65,6 +81,7 @@ module.exports = {
         tipo: 'ingreso',
         forma_pago: 'mercadopago',
         info: 'Pago con vencimiento',
+        id_usuario: '1',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -72,6 +89,8 @@ module.exports = {
         importe: 36000,
         tipo: 'ingreso',
         forma_pago: 'efectivo',
+        info: '',
+        id_usuario: '2',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -80,6 +99,7 @@ module.exports = {
         tipo: 'ingreso',
         forma_pago: 'efectivo',
         info: 'Pago con vencimiento',
+        id_usuario: '2',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -88,8 +108,9 @@ module.exports = {
         tipo: 'egreso',
         forma_pago: 'egreso',
         info: 'Devolución de cuotas por eliminación de Contrato Individual AAA-000/63000444',
-        created_at: new Date(),
-        updated_at: new Date()
+        id_usuario: '2',
+        created_at: '2023-03-02 12:00:00',
+        updated_at: '2023-03-02 12:00:00'
       }
     ]);
   },

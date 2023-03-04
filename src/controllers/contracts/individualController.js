@@ -147,9 +147,6 @@ module.exports = {
         });
       }
       if (lastname) {
-        console.log('***************************');
-        console.log(lastname);
-        console.log('***************************');
         const passengers = await Pasajero.findAll({
           where: {
             apellido: {
@@ -185,12 +182,6 @@ module.exports = {
           )
         );
         individualContracts = individualContracts.flat();
-        console.log(individualContracts);
-        /* return res.status(200).json({
-          status: 'success',
-          msg: 'Contratos recuperados',
-          data: []
-        }); */
       }
       if (list) {
         const parsedList = JSON.parse(list);
@@ -217,7 +208,6 @@ module.exports = {
               })
           )
         );
-        console.log(individualContracts);
       }
       if (req.user.rol.name !== SUPER) {
         const mapped = individualContracts?.map((result) => result.dataValues);

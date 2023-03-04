@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       contract_url: {
-        type: DataTypes.CHAR(80),
+        type: DataTypes.TEXT,
         allowNull: true
       },
       estado: {
