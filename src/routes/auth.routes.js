@@ -8,9 +8,10 @@ const authController = require('../controllers/authController');
 const { tokenIsValid } = require('../middlewares/auth/authMiddlewares');
 const { userExist } = require('../middlewares/user/userMiddlewares');
 const { validatesLoginForm } = require('../middlewares/user/validationsFields');
+const { PassengerExist } = require('../middlewares/passenger/logginPassenger');
 
 //routes
 router.post('/login', [validatesLoginForm, userExist], authController.login);
-// router.get('/checkToken', [tokenIsValid], authController.checkToken);
+router.post('/loginpassenger', [PassengerExist], authController.loginPassenger);
 
 module.exports = router;

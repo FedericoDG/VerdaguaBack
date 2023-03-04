@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       porcentaje_senia: {
         type: DataTypes.INTEGER(2),
         allowNull: false
+      },
+      access_token_produccion: {
+        type: DataTypes.STRING(80),
+        allowNull: false
       }
     },
     {

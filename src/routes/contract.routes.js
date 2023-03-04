@@ -6,7 +6,7 @@ const generalContractController = require('../controllers/contracts/generalContr
 const individualContractController = require('../controllers/contracts/individualController');
 
 //middlewares
-const { tokenIsValid, isUser, isAdmin } = require('../middlewares/auth/authMiddlewares');
+const { tokenIsValid, isUser, isAdmin, isUserOrPassenger } = require('../middlewares/auth/authMiddlewares');
 const { generalContractExist, generalContractAlreadyExist } = require('../middlewares/contracts/general/generalContractMiddlewares');
 const { individualContractExist } = require('../middlewares/contracts/individual/individualContractMiddlewares');
 const { validatesCreateForm } = require('../middlewares/contracts/general/validationsFields');
@@ -25,9 +25,9 @@ router.delete('/general/:id', [tokenIsValid, isAdmin], generalContractController
 //routes -- INDIVIDUAL CONTRACTS
 router.get('/individual', [tokenIsValid, isUser], individualContractController.get);
 router.get('/individual/codes', [tokenIsValid, isUser], individualContractController.getCodes);
-router.get('/individual/search', [tokenIsValid, isUser], individualContractController.getByQuery);
+router.get('/individual/search', [tokenIsValid, isUserOrPassenger], individualContractController.getByQuery);
 router.post('/individual/recalculate/:id', [tokenIsValid, isUser], individualContractController.recalculate);
-router.get('/individual/installments/:id', [tokenIsValid, isUser], individualContractController.installments);
+router.get('/individual/installments/:id', [tokenIsValid, isUserOrPassenger], individualContractController.installments);
 router.get('/individual/:id', [tokenIsValid, isUser, individualContractExist], individualContractController.getById);
 router.post('/individual', [tokenIsValid, isUser, validatesCreateFormIndividual], individualContractController.create);
 router.put('/individual/new-implements/:id', [tokenIsValid, isUser], individualContractController.newShares);

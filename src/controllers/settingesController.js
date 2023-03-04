@@ -9,31 +9,30 @@ module.exports = {
       });
       res.status(200).json({
         status: 'success',
+        msg: 'Parámetros recuperados con éxito',
         data: settings
       });
     } catch (error) {
       res.status(409).json({
-        msg: 'Ha ocurrido un error al intentar recuperar los par',
+        msg: 'Ha ocurrido un error al intentar recuperar los parámetros',
         error,
         status: 'error'
       });
     }
   },
   edit: async (req, res) => {
-    /* const errors = validationResult(req);
+    const errors = validationResult(req);
     if (errors.isEmpty()) {
       try {
-        const institution = req.body;
-        const { id } = req.params;
-        await Institucion.update({ ...institution }, { where: { id } });
+        await Parametro.update({ ...req.body }, { where: { id: 1 } });
         res.status(200).json({
           status: 'success',
-          msg: 'Institución editada con éxito'
+          msg: 'Parámetros editados con éxito.'
         });
       } catch (error) {
         res.status(409).json({
           status: 'error',
-          msg: 'Ha ocurrido un error al intentar editar la institución',
+          msg: 'Ha ocurrido un error al intentar editar los parámetros',
           error
         });
       }
@@ -44,6 +43,6 @@ module.exports = {
         error: errors,
         returnData: req.body
       });
-    } */
+    }
   }
 };

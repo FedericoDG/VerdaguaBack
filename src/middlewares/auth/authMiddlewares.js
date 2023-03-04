@@ -34,6 +34,17 @@ module.exports = {
       });
     }
   },
+  isUserOrPassenger: (req, res, next) => {
+    const { user } = req;
+    if (user.rol.name === SUPER || user.rol.name === ADMIN || user.rol.name === USER || user.rol.name === 'passenger') {
+      return next();
+    } else {
+      return res.status(403).json({
+        status: 'unauthorized',
+        msg: 'Acceso denegado'
+      });
+    }
+  },
   isAdmin: (req, res, next) => {
     const { user } = req;
     if (user.rol.name === SUPER || user.rol.name === ADMIN) {

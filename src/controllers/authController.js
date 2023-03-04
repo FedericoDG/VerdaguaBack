@@ -45,15 +45,37 @@ module.exports = {
         status: 'bad request'
       });
     }
+  },
+  loginPassenger: async (req, res) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      try {
+        const { pasajero } = req.contratoIndividual;
+        const pasajeroMapped = pasajero.dataValues;
+        const { created_at, updated_at, ...rest } = pasajeroMapped;
+        const user = { ...rest, cod_contrato: req.body.cod_contrato, rol: { name: 'passenger' } };
+        //creates security token
+        const token = jwt.sign(user);
+        res.status(200).json({
+          status: 'success',
+          msq: 'Pasajero autenticado con éxito',
+          user,
+          token
+        });
+      } catch (error) {
+        res.status(409).json({
+          status: 'error',
+          msg: 'Ha ocurrido un error al intentar autenticar al pasajero',
+          error
+        });
+      }
+    } else {
+      res.status(400).json({
+        msg: 'El formulario tiene errores en los campos',
+        error: errors,
+        returnData: req.body,
+        status: 'bad request'
+      });
+    }
   }
-  /* checkToken: (req, res) => {
-    const { nombre, apellido, email, id_rol } = req.user;
-    const { token } = req;
-    res.status(200).json({
-      msg: 'El token es invalido',
-      user: { nombre, apellido, email, id_rol },
-      token: token,
-      status: 'success'
-    });
-  } */
 };
