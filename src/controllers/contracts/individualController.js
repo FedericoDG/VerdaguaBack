@@ -140,7 +140,11 @@ module.exports = {
             },
             {
               model: Pasajero,
-              as: 'pasajero'
+              as: 'pasajero',
+              include: {
+                model: Responsable,
+                as: 'responsable'
+              }
             }
           ],
           order: [['id', 'DESC']]
