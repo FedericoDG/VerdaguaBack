@@ -17,10 +17,12 @@ module.exports = {
         let preference = {
           items,
           back_urls: {
-            // success: `http://localhost:5173/mercadopago?feedback=success&token=${items[0].id}`,
-            success: `https://borrar-front.vercel.app/mercadopago?feedback=success`,
-            pending: `https://borrar-front.vercel.app/mercadopago?feedback=pending`,
-            failure: `https://borrar-front.vercel.app/mercadopago?feedback=failure`
+            /* success: `http://localhost:5173/panel?feedback=success`,
+            pending: `http://localhost:5173/panel?feedback=pending`,
+            failure: `http://localhost:5173/panel?feedback=failure` */
+            success: `https://borrar-front.vercel.app/panel?feedback=success`,
+            pending: `https://borrar-front.vercel.app/panel?feedback=pending`,
+            failure: `https://borrar-front.vercel.app/panel?feedback=failure`
           },
           auto_return: 'approved',
           binary_mode: true,
@@ -32,7 +34,7 @@ module.exports = {
             ], */
             installments: 1
           },
-          // notification_url: `https://6691-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
+          // notification_url: `https://8e94-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
           notification_url: `https://borrar-back.vercel.app/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
         };
 
@@ -69,7 +71,14 @@ module.exports = {
     if (topic === 'merchant_order') {
       const order = await mercadopago.merchant_orders.findById(id);
       // 'paid'
+      // 'payment_in_process'
       // 'payment_required'
+
+      // closed
+
+      if (order.body.order_status === 'payment_in_process' && order.body.status === 'closed') {
+        await Cuota.update({ estado: 'en-proceso' }, { where: { id: cuota_id } });
+      }
 
       if (order.body.order_status === 'paid' && order.body.status === 'closed') {
         await Cuota.update({ estado: 'pagada' }, { where: { id: cuota_id } });
