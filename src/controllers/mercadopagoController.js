@@ -17,7 +17,7 @@ module.exports = {
         let preference = {
           items,
           back_urls: {
-            /* success: `http://localhost:5173/panel?feedback=success`,
+            /*  success: `http://localhost:5173/panel?feedback=success`,
             pending: `http://localhost:5173/panel?feedback=pending`,
             failure: `http://localhost:5173/panel?feedback=failure` */
             success: `https://borrar-front.vercel.app/panel?feedback=success`,
@@ -34,7 +34,7 @@ module.exports = {
             ],
             installments: 1
           },
-          // notification_url: `https://6a00-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
+          // notification_url: `https://475d-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
           notification_url: `https://borrar-back.vercel.app/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
         };
 
@@ -82,10 +82,6 @@ module.exports = {
       console.log('*******************************************************');
       console.log('*******************************************************');
 
-      /* if (order.body.order_status === 'payment_in_process' && order.body.status === 'closed') {
-        await Cuota.update({ estado: 'en-proceso' }, { where: { id: cuota_id } });
-      } */
-
       const { estado } = await Cuota.findByPk(cuota_id);
 
       if (order.body.order_status === 'paid' && order.body.status === 'closed' && estado !== 'pagada') {
@@ -124,6 +120,14 @@ module.exports = {
             },
             { where: { id: id_contrato_individual } }
           );
+        }
+
+        const { valor_contrato, pagos } = await ContratoIndividual.findByPk(id_contrato_individual, {
+          attributes: ['valor_contrato', 'pagos']
+        });
+
+        if (Number(valor_contrato) === Number(pagos)) {
+          await ContratoIndividual.update({ estado: 'pagado' }, { where: { id: id_contrato_individual } });
         }
 
         await Movimiento.create({

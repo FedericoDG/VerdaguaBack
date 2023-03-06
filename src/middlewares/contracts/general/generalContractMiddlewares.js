@@ -47,6 +47,9 @@ module.exports = {
   generalContractAlreadyExist: async (req, res, next) => {
     try {
       const cod_contrato = randomCode();
+      /* 
+      TODO: Verificar que el código no está repetido
+      */
       const { dataValues: generalContract } = (await ContratoGeneral.findOne({ where: { cod_contrato } })) || { dataValues: null };
       if (!generalContract) {
         req.cod_contrato = cod_contrato;
