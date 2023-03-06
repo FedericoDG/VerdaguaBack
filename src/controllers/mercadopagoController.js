@@ -18,9 +18,9 @@ module.exports = {
           items,
           back_urls: {
             // success: `http://localhost:5173/mercadopago?feedback=success&token=${items[0].id}`,
-            success: `https://borrar-front.vercel.app/?feedback=success&token=${items[0].id}`,
-            pending: `https://borrar-front.vercel.app/?feedback=pending&token=${items[0].id}`,
-            failure: `https://borrar-front.vercel.app/?feedback=failure&token=${items[0].id}`
+            success: `https://borrar-front.vercel.app?feedback=success`,
+            pending: `https://borrar-front.vercel.app?feedback=pending`,
+            failure: `https://borrar-front.vercel.app?feedback=failure`
           },
           auto_return: 'approved',
           binary_mode: true,
