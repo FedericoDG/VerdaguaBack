@@ -18,18 +18,18 @@ module.exports = {
           items,
           back_urls: {
             // success: `http://localhost:5173/mercadopago?feedback=success&token=${items[0].id}`,
-            success: `https://borrar-front.vercel.app?feedback=success`,
-            pending: `https://borrar-front.vercel.app?feedback=pending`,
-            failure: `https://borrar-front.vercel.app?feedback=failure`
+            success: `https://borrar-front.vercel.app/mercadopago?feedback=success`,
+            pending: `https://borrar-front.vercel.app/mercadopago?feedback=pending`,
+            failure: `https://borrar-front.vercel.app/mercadopago?feedback=failure`
           },
           auto_return: 'approved',
           binary_mode: true,
           payment_methods: {
-            excluded_payment_types: [
+            /* excluded_payment_types: [
               {
                 id: 'ticket'
               }
-            ],
+            ], */
             installments: 1
           },
           // notification_url: `https://6691-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
