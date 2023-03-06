@@ -27,14 +27,14 @@ module.exports = {
           auto_return: 'approved',
           binary_mode: true,
           payment_methods: {
-            /* excluded_payment_types: [
+            excluded_payment_types: [
               {
                 id: 'ticket'
               }
-            ], */
+            ],
             installments: 1
           },
-          // notification_url: `https://8e94-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
+          // notification_url: `https://6a00-152-170-151-66.sa.ngrok.io/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
           notification_url: `https://borrar-back.vercel.app/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
         };
 
@@ -75,12 +75,20 @@ module.exports = {
       // 'payment_required'
 
       // closed
+      console.log('*******************************************************');
+      console.log('*******************************************************');
+      console.log(order.body.status);
+      console.log(order.body.order_status);
+      console.log('*******************************************************');
+      console.log('*******************************************************');
 
-      if (order.body.order_status === 'payment_in_process' && order.body.status === 'closed') {
+      /* if (order.body.order_status === 'payment_in_process' && order.body.status === 'closed') {
         await Cuota.update({ estado: 'en-proceso' }, { where: { id: cuota_id } });
-      }
+      } */
 
-      if (order.body.order_status === 'paid' && order.body.status === 'closed') {
+      const { estado } = await Cuota.findByPk(cuota_id);
+
+      if (order.body.order_status === 'paid' && order.body.status === 'closed' && estado !== 'pagada') {
         await Cuota.update({ estado: 'pagada' }, { where: { id: cuota_id } });
 
         const { valor_primer_vencimiento, valor_segundo_vencimiento, numero } = await Cuota.findByPk(cuota_id);
@@ -122,7 +130,7 @@ module.exports = {
           importe: Number(order.body.total_amount),
           tipo: 'ingreso',
           forma_pago: 'mercadopago',
-          info: `pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
+          info: `Pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
             Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) + Number(valor_primer_vencimiento)
           )}. Contrato: ${contratoIndividual.cod_contrato}. Pasajero: ${contratoIndividual.pasajero.nombre} ${
             contratoIndividual.pasajero.apellido
@@ -131,8 +139,21 @@ module.exports = {
         });
       }
     }
+    res.status(200).send('ok');
+  },
+  getOrder: async (req, res) => {
+    const { id } = req.params;
+
+    const { access_token_produccion } = await Parametro.findByPk(1);
+
+    mercadopago.configure({ access_token: access_token_produccion });
+
+    const data = await mercadopago.merchant_orders.findById(id);
+
     res.status(200).json({
-      ok: 'ok'
+      status: 'success',
+      msq: 'Orden de Mercadopago requperada',
+      data: data.body
     });
   }
 };

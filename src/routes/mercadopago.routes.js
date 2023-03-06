@@ -8,6 +8,7 @@ const mercadopagoController = require('../controllers/mercadopagoController');
 const { isUserOrPassenger, tokenIsValid } = require('../middlewares/auth/authMiddlewares');
 
 //routes
+router.get('/:id', mercadopagoController.getOrder);
 router.post('/webhook/', mercadopagoController.webHook);
 router.post('/', [tokenIsValid, isUserOrPassenger], mercadopagoController.post);
 
