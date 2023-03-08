@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       access_token_produccion: {
         type: DataTypes.STRING(80),
         allowNull: false
+      },
+      ticket: {
+        type: DataTypes.INTEGER(7),
+        allowNull: true
       }
     },
     {

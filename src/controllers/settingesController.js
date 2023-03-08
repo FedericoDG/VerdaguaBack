@@ -20,6 +20,25 @@ module.exports = {
       });
     }
   },
+  getTicket: async (_, res) => {
+    try {
+      const data = await Parametro.findByPk(1, {
+        attributes: ['ticket'],
+        order: [['id', 'DESC']]
+      });
+      res.status(200).json({
+        status: 'success',
+        msg: 'Parámetros recuperados con éxito',
+        data
+      });
+    } catch (error) {
+      res.status(409).json({
+        msg: 'Ha ocurrido un error al intentar recuperar los parámetros',
+        error,
+        status: 'error'
+      });
+    }
+  },
   edit: async (req, res) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {

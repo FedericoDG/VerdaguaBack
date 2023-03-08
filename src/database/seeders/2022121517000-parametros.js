@@ -11,6 +11,7 @@ module.exports = {
         porcentaje_recargo_segundo_vencimiento: 10,
         porcentaje_senia: 40,
         access_token_produccion: 'APP_USR-1169672341085829-030419-488d60777dec8b58801f9af246da21b0-1323355081',
+        ticket: 1,
         created_at: new Date(),
         updated_at: new Date()
       }

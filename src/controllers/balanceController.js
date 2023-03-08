@@ -1,5 +1,5 @@
 const { SUPER } = require('../constants/roles');
-const { Movimiento } = require('../database/models');
+const { Movimiento, Usuario } = require('../database/models');
 const { Op } = require('sequelize');
 
 module.exports = {
@@ -36,7 +36,14 @@ module.exports = {
       };
     }
 
-    const movements = await Movimiento.findAll({ where, order: [['id', 'DESC']] });
+    const movements = await Movimiento.findAll({
+      where,
+      include: {
+        model: Usuario,
+        as: 'usuario'
+      },
+      order: [['id', 'DESC']]
+    });
 
     const incomes = movements.filter((el) => el.tipo === 'ingreso');
     const totalIncomes = incomes.reduce((acc, el) => acc + Number(el.importe), 0);
@@ -65,7 +72,8 @@ module.exports = {
         mercadopago,
         outcomes,
         outcomesCount: outcomes.length,
-        totalOutcomes
+        totalOutcomes,
+        date: new Date()
       }
     });
   },

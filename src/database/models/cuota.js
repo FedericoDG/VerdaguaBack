@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       estado: {
         type: DataTypes.ENUM('pagada', 'pendiente', 'en-proceso'),
         allowNull: false
+      },
+      ticket: {
+        type: DataTypes.INTEGER(7),
+        allowNull: true
       }
     },
     {

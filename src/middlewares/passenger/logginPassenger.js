@@ -1,12 +1,18 @@
 const { ContratoIndividual, Pasajero } = require('../../database/models');
+const { Op } = require('sequelize');
 
 module.exports = {
   PassengerExist: async (req, res, next) => {
     try {
-      const { cod_contrato } = req.body;
+      let { cod_contrato } = req.body;
       const { dataValues: contratoIndividual } = (await ContratoIndividual.findOne({
         where: {
-          cod_contrato
+          cod_contrato: {
+            [Op.like]: `%${cod_contrato}%`
+          },
+          estado: {
+            [Op.or]: ['vigente', 'pagado']
+          }
         },
         include: [
           {
@@ -18,7 +24,8 @@ module.exports = {
       if (!contratoIndividual) {
         return res.status(404).json({
           status: 'not found',
-          msg: 'El código de contrato no existe'
+          // msg: 'El código de contrato no existe'
+          msg: 'El número de cocumento no existe existe'
         });
       } else {
         req.contratoIndividual = contratoIndividual;
@@ -27,7 +34,8 @@ module.exports = {
     } catch (error) {
       res.status(409).json({
         status: 'error',
-        msg: 'Ha ocurrido un error al intentar verificar el código de contrato'
+        // msg: 'Ha ocurrido un error al intentar verificar el código de contrato'
+        msg: 'Ha ocurrido un error al intentar verificar el número de documento'
       });
     }
   }

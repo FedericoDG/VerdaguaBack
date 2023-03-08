@@ -136,10 +136,24 @@ module.exports = {
     }
   },
   getById: (req, res) => {
-    res.status(200).json({
+    const { generalContract } = req;
+    const { contratos_individuales: individualContracts } = generalContract;
+
+    const total = individualContracts.reduce((acc, el) => acc + Number(el.valor_contrato), 0);
+    const recaudado = individualContracts.reduce((acc, el) => acc + Number(el.pagos), 0);
+    const deuda = total - recaudado;
+
+    const totalRecaudar = res.status(200).json({
       status: 'success',
       msg: 'Contrato general encontrado',
-      data: req.generalContract
+      data: {
+        generalContract,
+        totales: {
+          total,
+          recaudado,
+          deuda
+        }
+      }
     });
   },
   getByInstitutionId: async (req, res) => {

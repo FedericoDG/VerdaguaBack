@@ -1,4 +1,4 @@
-const { Cuota, Movimiento, ContratoIndividual } = require('../database/models');
+const { Cuota, Movimiento, ContratoIndividual, Parametro } = require('../database/models');
 
 module.exports = {
   getById: (req, res) => {
@@ -9,11 +9,13 @@ module.exports = {
     });
   },
   createPay: async (req, res) => {
-    const { id, cuota, movimiento, contratoIndividual } = req.body;
+    const { id, cuota, movimiento, contratoIndividual, ticket } = req.body;
 
     const { descuento, recargo, diferencia_descripcion, info_tarjeta_transferencia, ...rest } = movimiento;
 
-    await Cuota.update({ estado: cuota.estado }, { where: { id: cuota.id } });
+    await Cuota.update({ estado: cuota.estado, ticket }, { where: { id: cuota.id } });
+
+    await Parametro.update({ ticket: Number(ticket) + 1 }, { where: { id: 1 } });
 
     if (info_tarjeta_transferencia) {
       await Movimiento.create({ ...rest, info: `${rest.info}. ${info_tarjeta_transferencia}`, id_usuario: req.user.id });

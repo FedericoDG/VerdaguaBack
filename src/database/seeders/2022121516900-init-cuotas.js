@@ -16,6 +16,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 1,
         id_movimiento: 1,
+        ticket: 1,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -28,6 +29,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 1,
         id_movimiento: 2,
+        ticket: 2,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -39,6 +41,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 1,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -50,6 +53,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 1,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -61,6 +65,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 1,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -72,6 +77,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 1,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -83,6 +89,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 1,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -96,6 +103,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 2,
         id_movimiento: 3,
+        ticket: 3,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -108,6 +116,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 2,
         id_movimiento: 4,
+        ticket: 4,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -120,6 +129,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 2,
         id_movimiento: 5,
+        ticket: 5,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -131,6 +141,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 2,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -142,6 +153,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 2,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -153,6 +165,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 2,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -164,6 +177,7 @@ module.exports = {
         valor_segundo_vencimiento: 16500,
         estado: 'pendiente',
         id_contrato_individual: 2,
+        ticket: null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -177,6 +191,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 3,
         id_movimiento: 6,
+        ticket: 6,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -189,6 +204,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 3,
         id_movimiento: 7,
+        ticket: 7,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -201,6 +217,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 3,
         id_movimiento: 8,
+        ticket: 7,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -213,6 +230,7 @@ module.exports = {
         estado: 'pagada',
         id_contrato_individual: 3,
         id_movimiento: 9,
+        ticket: 9,
         created_at: new Date(),
         updated_at: new Date()
       }

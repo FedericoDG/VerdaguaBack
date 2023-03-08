@@ -9,6 +9,7 @@ const { tokenIsValid, isUser, isAdmin } = require('../middlewares/auth/authMiddl
 
 //routes
 router.get('/', [tokenIsValid, isUser], settingsController.get);
+router.get('/ticket', [tokenIsValid, isUser], settingsController.getTicket);
 router.put('/', [tokenIsValid, isUser], settingsController.edit);
 
 module.exports = router;
