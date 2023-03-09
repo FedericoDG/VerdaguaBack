@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const institucion = sequelize.define(
-    'Institucion', //alias
+    'Institucion',
     {
-      //table structure
       nombre: {
         type: DataTypes.STRING(45),
         allowNull: false
@@ -21,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'instituciones',
       Timestamps: true,
       createdAt: 'created_at',
@@ -32,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
 
   institucion.associate = (models) => {
     institucion.hasMany(models.ContratoGeneral, {
-      as: 'contratosGenerales', //relation name
+      as: 'contratosGenerales',
       foreignKey: 'id_institucion'
     });
   };

@@ -1,7 +1,7 @@
-const { validationResult } = require('express-validator');
-const { Parametro, Cuota, ContratoIndividual, Movimiento, Pasajero } = require('../database/models');
-const mercadopago = require('mercadopago');
 const { formatCurrency } = require('../helpers/formatCurrency');
+const { Parametro, Cuota, ContratoIndividual, Movimiento, Pasajero } = require('../database/models');
+const { validationResult } = require('express-validator');
+const mercadopago = require('mercadopago');
 
 module.exports = {
   post: async (req, res) => {
@@ -72,13 +72,6 @@ module.exports = {
         // 'payment_required'
 
         // closed
-        console.log('*******************************************************');
-        console.log('*******************************************************');
-        console.log(order.body.status);
-        console.log(order.body.order_status);
-        console.log('*******************************************************');
-        console.log('*******************************************************');
-
         const { estado } = await Cuota.findByPk(cuota_id);
 
         if (order.body.order_status === 'paid' && order.body.status === 'closed' && estado !== 'pagada') {

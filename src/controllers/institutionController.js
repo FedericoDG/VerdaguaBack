@@ -1,6 +1,6 @@
 const { Institucion } = require('../database/models');
-const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
+const { validationResult } = require('express-validator');
 
 module.exports = {
   get: async (req, res) => {

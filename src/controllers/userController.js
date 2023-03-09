@@ -1,8 +1,7 @@
 const { Op } = require('sequelize');
-const { Usuario, Rol } = require('../database/models');
 const { SUPER } = require('../constants/roles');
+const { Usuario, Rol } = require('../database/models');
 const { validationResult } = require('express-validator');
-
 const bcrypt = require('../helpers/bcrypt');
 
 module.exports = {
@@ -33,7 +32,6 @@ module.exports = {
         data: listUsers
       });
     } catch (error) {
-      //TODO: Create a helper endpoint error respons
       res.status(409).json({
         msg: 'Ha ocurrido un error al intentar recuperar los usuarios',
         error,
@@ -50,11 +48,8 @@ module.exports = {
     });
   },
   create: async (req, res) => {
-    //form fields validations
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      //validations without errors
-      //new user
       try {
         const user = req.body;
         const { password } = user;
@@ -68,7 +63,6 @@ module.exports = {
           msg: 'Usuario creado con éxito'
         });
       } catch (error) {
-        //TODO: delete avatar img uploaded
         res.status(409).json({
           status: 'error',
           msg: 'Ha ocurrido un error al intentar crear el usuario',
@@ -76,8 +70,6 @@ module.exports = {
         });
       }
     } else {
-      //validations with errors
-      //TODO: delete avatar img uploaded
       res.status(400).json({
         status: 'bad request',
         msg: 'El formulario tiene errores en los campos',
@@ -87,10 +79,8 @@ module.exports = {
     }
   },
   edit: async (req, res) => {
-    //form fields validations
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      //validations without errors
       try {
         const user = req.body;
         const { id } = req.params;
@@ -102,7 +92,6 @@ module.exports = {
           data: updatedUser
         });
       } catch (error) {
-        //TODO: delete avatar img uploaded
         res.status(409).json({
           status: 'error',
           msg: 'Ha ocurrido un error al intentar editar el usuario',
@@ -110,8 +99,6 @@ module.exports = {
         });
       }
     } else {
-      //validations with errors
-      //TODO: delete avatar img uploaded
       res.status(400).json({
         status: 'bad request',
         msg: 'El formulario tiene errores en los campos',
@@ -121,10 +108,8 @@ module.exports = {
     }
   },
   editPass: async (req, res) => {
-    //form fields validations
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      //validations without errors
       try {
         const { id } = req.params;
         const { password } = req.body;
@@ -156,16 +141,10 @@ module.exports = {
       });
     }
   },
-  //TODO: FOR IMPLEMENT EVENTLY
-  /*
-    editImg: (req, res) => {
-        res.send("change user avatar");
-    },
-    */
   delete: async (req, res) => {
     try {
       const { id } = req.params;
-      const deletedUser = await Usuario.destroy({ where: { id } });
+      await Usuario.destroy({ where: { id } });
       res.status(200).json({
         msg: 'Usuario borrado con éxito',
         status: 'success'

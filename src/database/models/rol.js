@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const rol = sequelize.define(
-    'Rol', //alias
+    'Rol',
     {
-      //table structure
       name: {
         type: DataTypes.STRING(25),
         allowNull: false
@@ -13,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'roles',
       Timestamps: true,
       createdAt: 'created_at',
@@ -24,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
   rol.associate = (models) => {
     rol.hasMany(models.Usuario, {
-      as: 'usuarios', //relation name
+      as: 'usuarios',
       foreignKey: 'id_rol',
       onDelete: 'restrict'
     });

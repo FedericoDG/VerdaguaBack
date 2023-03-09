@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const cuota = sequelize.define(
-    'Cuota', //alias
+    'Cuota',
     {
-      //table structure
       numero: {
         type: DataTypes.INTEGER(2),
         allowNull: false
@@ -33,7 +32,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'cuotas',
       Timestamps: true,
       createdAt: 'created_at',

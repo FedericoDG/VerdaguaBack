@@ -4,10 +4,8 @@ const jwt = require('../helpers/jwt');
 
 module.exports = {
   login: async (req, res) => {
-    //form fields validations
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      //validations without errors
       try {
         const { password: storedPassword } = req.user;
         const { password } = req.body;
@@ -18,7 +16,6 @@ module.exports = {
             msg: 'Las contraseñas no coinciden'
           });
         } else {
-          //creates security token
           const { user } = req;
           const { password, ...rest } = user;
           const token = jwt.sign(rest);
@@ -37,7 +34,6 @@ module.exports = {
         });
       }
     } else {
-      //validations with errors
       res.status(400).json({
         msg: 'El formulario tiene errores en los campos',
         error: errors,
@@ -54,7 +50,6 @@ module.exports = {
         const pasajeroMapped = pasajero.dataValues;
         const { created_at, updated_at, ...rest } = pasajeroMapped;
         const user = { ...rest, cod_contrato: req.body.cod_contrato, rol: { name: 'passenger' } };
-        //creates security token
         const token = jwt.sign(user);
         res.status(200).json({
           status: 'success',

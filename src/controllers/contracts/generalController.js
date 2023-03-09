@@ -1,7 +1,8 @@
 const { ContratoIndividual, ContratoGeneral, Institucion, Cuota } = require('../../database/models');
+const { DateTime, Interval } = require('luxon');
+const { Op } = require('sequelize');
 const { SUPER } = require('../../constants/roles');
 const { validationResult } = require('express-validator');
-const { Op } = require('sequelize');
 
 module.exports = {
   get: async (req, res) => {
@@ -37,6 +38,7 @@ module.exports = {
       const { cod_contrato } = req.query;
       const { name } = req.query;
       let generalContracts;
+
       if (cod_contrato) {
         generalContracts = await ContratoGeneral.findAll({
           where: { cod_contrato },
@@ -49,6 +51,7 @@ module.exports = {
           order: [['id', 'DESC']]
         });
       }
+
       if (name) {
         const institutions = await Institucion.findAll({
           where: {
@@ -78,10 +81,12 @@ module.exports = {
           )
         ).flat();
       }
+
       if (req.user.rol.name !== SUPER) {
         const mapped = generalContracts.map((result) => result.dataValues);
         generalContracts = mapped.filter((el) => el.estado === 'vigente' || el.estado === 'pagado');
       }
+
       return res.status(200).json({
         status: 'success',
         msg: 'Contratos recuperados',
@@ -108,14 +113,12 @@ module.exports = {
         ],
         order: [['id', 'DESC']]
       });
+
       if (id) {
         const mapped = generalContracts.filter((el) => el.id == id);
         generalContracts = mapped;
       }
-      /* if (req.user.rol.name !== SUPER) {
-        const mapped = generalContracts.map((result) => result.dataValues);
-        generalContracts = mapped.filter((el) => el.estado === 'vigente' || el.estado === 'pagado');
-      } */
+
       const data = generalContracts
         .filter((el) => el.estado === 'vigente' || el.estado === 'pagado')
         .map((el) => ({
@@ -143,7 +146,7 @@ module.exports = {
     const recaudado = individualContracts.reduce((acc, el) => acc + Number(el.pagos), 0);
     const deuda = total - recaudado;
 
-    const totalRecaudar = res.status(200).json({
+    res.status(200).json({
       status: 'success',
       msg: 'Contrato general encontrado',
       data: {
@@ -190,7 +193,76 @@ module.exports = {
       });
     } catch (error) {
       res.status(409).json({
-        msg: 'Ha ocurrido un error al intentar recuperar los contratos generales........',
+        msg: 'Ha ocurrido un error al intentar recuperar los contratos generales',
+        error,
+        status: 'error'
+      });
+    }
+  },
+  getExpired: async (req, res) => {
+    try {
+      const today = new Date();
+
+      const nexDays = DateTime.fromJSDate(today).plus({ days: 14 }).toJSDate();
+
+      const where = {
+        fecha_viaje: {
+          [Op.and]: {
+            [Op.lte]: today
+          }
+        },
+        estado: 'vigente'
+      };
+
+      const where2 = {
+        fecha_viaje: {
+          [Op.and]: {
+            [Op.gte]: today,
+            [Op.lte]: nexDays
+          }
+        },
+        estado: 'vigente'
+      };
+
+      const expired = await ContratoGeneral.findAll({
+        where,
+        include: [
+          {
+            model: Institucion,
+            as: 'institucion'
+          }
+        ],
+        order: [['id', 'DESC']]
+      });
+
+      let toExpire = await ContratoGeneral.findAll({
+        where: where2,
+        include: [
+          {
+            model: Institucion,
+            as: 'institucion'
+          }
+        ],
+        order: [['id', 'DESC']]
+      });
+
+      const date1 = DateTime.now();
+      const toExpireMapped = toExpire.map((el) => el.dataValues);
+      toExpire = toExpireMapped.map((el) => ({
+        ...el,
+        dias_restantes: Math.ceil(Interval.fromDateTimes(date1, el.fecha_viaje).length('days'))
+      }));
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          expired,
+          toExpire
+        }
+      });
+    } catch (error) {
+      res.status(409).json({
+        msg: 'Ha ocurrido un error al intentar recuperar los contratos generales',
         error,
         status: 'error'
       });
@@ -202,8 +274,10 @@ module.exports = {
       try {
         const generalContract = req.body;
         const { cod_contrato } = req;
-        const now = new Date();
-        await ContratoGeneral.create({ ...generalContract, asientos_ocupados: 0, fecha_contrato: now, cod_contrato });
+        const date = generalContract.fecha_viaje + ' 03:00:00';
+        console.log(generalContract.fecha_viaje);
+        console.log(date);
+        await ContratoGeneral.create({ ...generalContract, fecha_viaje: date, asientos_ocupados: 0, cod_contrato });
         res.status(200).json({
           status: 'success',
           msg: 'Contrato general creado con éxito',
@@ -225,13 +299,61 @@ module.exports = {
       });
     }
   },
+  editExpired: async (req, res) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      try {
+        const { id } = req.params;
+
+        const individualContracts = await ContratoIndividual.findAll({
+          where: { id_contrato_general: id },
+          attributes: ['id', 'estado']
+        });
+
+        const iContractsMapped = individualContracts.map((el) => el.dataValues);
+        let valids = iContractsMapped.filter((el) => el.estado === 'vigente').map((el) => el.id);
+        if (valids.length > 0) {
+          return res.status(400).json({
+            status: 'error',
+            valids,
+            msg: `Imposible terminar contrato, tiene contratos individuales vigentes.`
+          });
+        }
+
+        // Tomar todos los contratos PAGADOS y pasarlos a TERMINADOS
+        valids = iContractsMapped.filter((el) => el.estado === 'pagado').map((el) => el.id);
+        await Promise.all(valids.map(async (el) => await ContratoIndividual.update({ estado: 'terminado' }, { where: { id: el } })));
+
+        await ContratoGeneral.update({ estado: 'terminado' }, { where: { id } });
+        res.status(200).json({
+          status: 'success',
+          msg: 'Contrato general terminado con éxito'
+        });
+      } catch (error) {
+        res.status(409).json({
+          status: 'error',
+          msg: 'Ha ocurrido un error al terminar editar el contrato general',
+          error
+        });
+      }
+    } else {
+      res.status(400).json({
+        status: 'bad request',
+        msg: 'El formulario tiene errores en los campos',
+        error: errors,
+        returnData: req.body
+      });
+    }
+  },
   edit: async (req, res) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
       try {
         const generalContract = req.body;
-        const { fecha_contrato, cod_contrato, estado, ...rest } = generalContract;
+        const { fecha_contrato, cod_contrato, estado, fecha_viaje, ...rest } = generalContract;
         const { id } = req.params;
+
+        const date = generalContract.fecha_viaje + ' 03:00:00';
 
         const individualContracts = await ContratoIndividual.findAll({
           where: { id_contrato_general: id },
@@ -265,7 +387,7 @@ module.exports = {
           valids = iContractsMapped.filter((el) => el.estado === 'pagado').map((el) => el.id);
           await Promise.all(valids.map(async (el) => await ContratoIndividual.update({ estado: 'terminado' }, { where: { id: el } })));
         }
-        await ContratoGeneral.update({ estado, ...rest }, { where: { id } });
+        await ContratoGeneral.update({ estado, fecha_viaje: date, ...rest }, { where: { id } });
         res.status(200).json({
           status: 'success',
           msg: 'Contrato general editado con éxito'

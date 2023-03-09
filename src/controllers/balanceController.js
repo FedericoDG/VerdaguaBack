@@ -1,6 +1,6 @@
-const { SUPER } = require('../constants/roles');
 const { Movimiento, Usuario } = require('../database/models');
 const { Op } = require('sequelize');
+const { SUPER } = require('../constants/roles');
 
 module.exports = {
   get: async (req, res) => {

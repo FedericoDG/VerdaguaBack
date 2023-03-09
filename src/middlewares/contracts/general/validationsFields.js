@@ -1,7 +1,6 @@
 const { check } = require('express-validator');
 
 const validates = {
-  //For common data
   validatesCreateForm: [
     check('descripcion').notEmpty().withMessage('Este campo es requerido'),
     check('valor_contrato').notEmpty().withMessage('Este campo es requerido'),

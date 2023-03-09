@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const usuario = sequelize.define(
-    'Usuario', //alias
+    'Usuario',
     {
-      //table structure
       nombre: {
         type: DataTypes.STRING(45),
         allowNull: false
@@ -22,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'usuarios',
       Timestamps: true,
       createdAt: 'created_at',

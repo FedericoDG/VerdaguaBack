@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const contratoIndividual = sequelize.define(
-    'ContratoIndividual', //alias
+    'ContratoIndividual',
     {
-      //table structure
       cod_contrato: {
         type: DataTypes.STRING(16),
         allowNull: false
@@ -25,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'contratos_individuales',
       Timestamps: true,
       createdAt: 'created_at',
@@ -36,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
 
   contratoIndividual.associate = (models) => {
     contratoIndividual.belongsTo(models.Pasajero, {
-      as: 'pasajero', //relationship name
+      as: 'pasajero',
       foreignKey: 'id_pasajero',
       onDelete: 'restrict'
     });

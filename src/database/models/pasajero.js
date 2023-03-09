@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const pasajero = sequelize.define(
-    'Pasajero', //alias
+    'Pasajero',
     {
-      //table structure
       nombre: {
         type: DataTypes.STRING(45),
         allowNull: false
@@ -25,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'pasajeros',
       Timestamps: true,
       createdAt: 'created_at',

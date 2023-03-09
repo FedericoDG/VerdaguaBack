@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const contratoGeneral = sequelize.define(
-    'ContratoGeneral', //alias
+    'ContratoGeneral',
     {
-      //table structure
       cod_contrato: {
         type: DataTypes.STRING(7),
         allowNull: false
@@ -49,7 +48,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'contratos_generales',
       Timestamps: true,
       createdAt: 'created_at',
@@ -66,11 +64,11 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'restrict'
     });
     contratoGeneral.belongsToMany(models.Responsable, {
-      through: 'responsables_contratos_generales', //relation name
+      through: 'responsables_contratos_generales',
       foreignKey: 'id_contrato_general'
     });
     contratoGeneral.belongsTo(models.Institucion, {
-      as: 'institucion', //relation name
+      as: 'institucion',
       foreignKey: 'id_institucion',
       onDelete: 'restrict'
     });

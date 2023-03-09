@@ -2,7 +2,6 @@ const formatCurrency = (number) => new Intl.NumberFormat('es-AR', { style: 'curr
 
 const formatTwoDigits = (number) =>
   new Intl.NumberFormat('es-AR', {
-    // minimumIntegerDigits: 2,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     useGrouping: false

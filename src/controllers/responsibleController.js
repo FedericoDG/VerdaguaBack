@@ -1,18 +1,12 @@
+const { Op } = require('sequelize');
 const { Responsable } = require('../database/models');
 const { validationResult } = require('express-validator');
-const { Op } = require('sequelize');
 
 module.exports = {
   get: async (req, res) => {
     try {
       const responsibles = await Responsable.findAll({
         order: [['id', 'DESC']]
-        /* include: [
-          {
-            model: Pasajero,
-            as: 'pasajeros'
-          }
-        ] */
       });
       res.status(200).json({
         status: 'success',
@@ -33,8 +27,9 @@ module.exports = {
         attributes: ['documento', 'apellido', 'nombre'],
         order: [['id', 'DESC']]
       });
+
       const data = responsibles.map((el) => ({ label: `${el.documento} - ${el.apellido}, ${el.nombre}`, id: el.documento }));
-      //const data = responsibles.map((el) => el.documento);
+
       res.status(200).json({
         status: 'success',
         count: responsibles.length,

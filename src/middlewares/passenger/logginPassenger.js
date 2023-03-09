@@ -24,7 +24,6 @@ module.exports = {
       if (!contratoIndividual) {
         return res.status(404).json({
           status: 'not found',
-          // msg: 'El código de contrato no existe'
           msg: 'El número de cocumento no existe existe'
         });
       } else {
@@ -34,7 +33,6 @@ module.exports = {
     } catch (error) {
       res.status(409).json({
         status: 'error',
-        // msg: 'Ha ocurrido un error al intentar verificar el código de contrato'
         msg: 'Ha ocurrido un error al intentar verificar el número de documento'
       });
     }

@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const movimiento = sequelize.define(
-    'Movimiento', //alias
+    'Movimiento',
     {
-      //table structure
       importe: {
         type: DataTypes.DECIMAL(8, 2),
         allowNull: false
@@ -21,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      //configs
       tablename: 'movimientos',
       Timestamps: true,
       createdAt: 'created_at',
