@@ -20,6 +20,7 @@ module.exports = {
         const mapped = generalContracts.map((result) => result.dataValues);
         generalContracts = mapped.filter((el) => el.estado === 'vigente' || el.estado === 'pagado');
       }
+
       res.status(200).json({
         status: 'success',
         count: generalContracts.length,
@@ -41,7 +42,11 @@ module.exports = {
 
       if (cod_contrato) {
         generalContracts = await ContratoGeneral.findAll({
-          where: { cod_contrato },
+          where: {
+            cod_contrato: {
+              [Op.like]: `%${cod_contrato}%`
+            }
+          },
           include: [
             {
               model: Institucion,
@@ -352,6 +357,19 @@ module.exports = {
         const generalContract = req.body;
         const { fecha_contrato, cod_contrato, estado, fecha_viaje, ...rest } = generalContract;
         const { id } = req.params;
+
+        // Verificar  que no existan m'as contratos individuales que el nuevo cupo de viaje
+        const indivudualContracts = await ContratoIndividual.findAll({
+          where: { id_contrato_general: id, [Op.or]: [{ estado: 'vigente' }, { estado: 'pagado' }] },
+          attributes: ['id']
+        });
+
+        if (indivudualContracts.length > rest.asientos_totales) {
+          return res.status(409).json({
+            status: 'error',
+            msg: `No es posible reducir a ${rest.asientos_totales} el cupo de pasajeros. Hay ${indivudualContracts.length} Contratos Individuales asociados`
+          });
+        }
 
         const date = generalContract.fecha_viaje + ' 03:00:00';
 

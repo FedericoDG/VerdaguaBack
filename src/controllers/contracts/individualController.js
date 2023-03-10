@@ -38,7 +38,7 @@ module.exports = {
       });
       if (req.user.rol.name !== SUPER) {
         const mapped = individualContracts?.map((result) => result.dataValues);
-        individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado');
+        individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado' || el.estado === 'cancelado');
       }
       res.status(200).json({
         status: 'success',
@@ -232,7 +232,7 @@ module.exports = {
       }
       if (req.user.rol.name !== SUPER) {
         const mapped = individualContracts?.map((result) => result.dataValues);
-        individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado');
+        individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado' || el.estado === 'cancelado');
       }
       return res.status(200).json({
         status: 'success',
@@ -393,13 +393,13 @@ module.exports = {
         if (individualContractExist) {
           return res.status(400).json({
             status: 'success',
-            msg: 'Ya existe un Contrato Individual para este pasajero'
+            msg: 'Ya existe un Contrato Individual para este pasajero. Es posible que exista como cancelado.'
           });
         }
 
         let individualContract;
 
-        if (cuotas.length > 13) {
+        if (cuotas.length > 7) {
           individualContract = await ContratoIndividual.create({
             id_contrato_general: id_contrato_general,
             id_pasajero: id_pasajero,
@@ -429,7 +429,7 @@ module.exports = {
         const occupiedSeats = generalContract.asientos_ocupados + 1;
         await ContratoGeneral.update({ asientos_ocupados: occupiedSeats }, { where: { id: id_contrato_general } });
 
-        if (cuotas.length > 13) {
+        if (cuotas.length > 7) {
           return res.status(200).json({
             status: 'success',
             msg: 'Contrato individual creado con éxito. Redireccionando',
@@ -483,7 +483,7 @@ module.exports = {
 
             return res.status(200).json({
               status: 'success',
-              msg: `Contrato individual editado con éxito. Se eliminaron todas las cuotas asociadas`
+              msg: `Se eliminaron todas las cuotas asociadas. CONSIDERE ELIMINAR EL CONTRATO`
             });
           }
 
@@ -497,7 +497,7 @@ module.exports = {
           const total_return = installments.reduce((acc, el) => acc + Number(el.valor_primer_vencimiento), 0) * -1;
 
           // Inserción del movimiento(egreso)
-          if (Number(total_return) > 0) {
+          if (Number(total_return) !== 0) {
             await Movimiento.create({
               importe: total_return,
               tipo: 'egreso',
@@ -524,16 +524,16 @@ module.exports = {
             status: 'success',
             cuotas_devueltas: installments,
             total_cuotas_devultas: total_return,
-            msg: `Contrato individual editado con éxito. Se liberó un asiento del Contrato general. Se devolvieron $ ${
+            msg: `Se liberó un asiento del Contrato general. Se devolvieron $ ${
               total_return * -1
-            } en concepto de cuotas.  Se eliminaron todas las cuotas asociadas`
+            } en concepto de cuotas.  Se eliminaron todas las cuotas asociadas. CONSIDERE ELIMINAR EL CONTRATO`
           });
         }
 
         if (estado === 'pagado') {
           // Obtención de todas las cuotas asociadas al Contrato Individual que será borrado
           const installments = await Cuota.findAll({
-            where: { id_contrato_individual: id, numero: { [Op.not]: 0 }, estado: 'pendiente' },
+            where: { id_contrato_individual: id, /* numero: { [Op.not]: 0 }, */ estado: 'pendiente' },
             attributes: ['id', 'valor_primer_vencimiento']
           });
 
@@ -547,7 +547,8 @@ module.exports = {
               importe: total_charge,
               tipo: 'ingreso',
               forma_pago: 'efectivo',
-              info: `Pago de todas las cuotas pendientes del Contrato Individual ${individualContract.cod_contrato}`
+              info: `Pago de todas las cuotas pendientes del Contrato Individual ${individualContract.cod_contrato}`,
+              id_usuario: user.id
             });
 
             msg = `Contrato individual editado con éxito. Ingresaron $ ${total_charge} en concepto de cuotas`;
