@@ -8,7 +8,7 @@ const {
   Movimiento,
   Responsable
 } = require('../../database/models');
-const { Op } = require('sequelize');
+const { literal, Op } = require('sequelize');
 const { SUPER } = require('../../constants/roles');
 const { validationResult } = require('express-validator');
 
@@ -385,77 +385,80 @@ module.exports = {
   create: async (req, res) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      try {
-        const { id_contrato_general, id_pasajero, valor, cuotas, codigo_contrato_individual } = req.body;
+      /* try { */
+      const { id_contrato_general, id_pasajero, valor, cuotas, codigo_contrato_individual } = req.body;
 
-        const individualContractExist = await ContratoIndividual.findOne({ where: { cod_contrato: codigo_contrato_individual } });
+      const individualContractExist = await ContratoIndividual.findOne({ where: { cod_contrato: codigo_contrato_individual } });
 
-        if (individualContractExist) {
-          return res.status(400).json({
-            status: 'success',
-            msg: 'Ya existe un Contrato Individual para este pasajero. Es posible que exista como cancelado.'
-          });
-        }
-
-        let individualContract;
-
-        if (cuotas.length > 7) {
-          individualContract = await ContratoIndividual.create({
-            id_contrato_general: id_contrato_general,
-            id_pasajero: id_pasajero,
-            cod_contrato: codigo_contrato_individual,
-            valor_contrato: 0,
-            pagos: 0,
-            recargos_pagos_segundo_vencimiento: 0,
-            estado: 'pagado'
-          });
-        } else {
-          individualContract = await ContratoIndividual.create({
-            id_contrato_general: id_contrato_general,
-            id_pasajero: id_pasajero,
-            cod_contrato: codigo_contrato_individual,
-            valor_contrato: valor,
-            pagos: 0,
-            recargos_pagos_segundo_vencimiento: 0,
-            estado: 'vigente'
-          });
-
-          const cuotasConId = cuotas.map((el) => ({ ...el, id_contrato_individual: individualContract.id }));
-
-          await Promise.all(cuotasConId.map(async (share) => Cuota.create({ ...share })));
-        }
-
-        const generalContract = await ContratoGeneral.findByPk(id_contrato_general);
-        const occupiedSeats = generalContract.asientos_ocupados + 1;
-        await ContratoGeneral.update({ asientos_ocupados: occupiedSeats }, { where: { id: id_contrato_general } });
-
-        if (cuotas.length > 7) {
-          return res.status(200).json({
-            status: 'success',
-            msg: 'Contrato individual creado con éxito. Redireccionando',
-            data: {
-              codigo: individualContract.cod_contrato,
-              id: individualContract.id
-            }
-          });
-        }
-
-        res.status(200).json({
+      // Verifica que no exita un contrato para este pasajero
+      if (individualContractExist) {
+        return res.status(400).json({
           status: 'success',
-          msg: 'Contrato individual creado con éxito. Redireccionando a pagos',
+          msg: 'Ya existe un Contrato Individual para este pasajero. Es posible que exista como cancelado.'
+        });
+      }
+
+      let individualContract;
+
+      if (cuotas.length > 7) {
+        individualContract = await ContratoIndividual.create({
+          id_contrato_general: id_contrato_general,
+          id_pasajero: id_pasajero,
+          cod_contrato: codigo_contrato_individual,
+          valor_contrato: 0,
+          pagos: 0,
+          recargos_pagos_segundo_vencimiento: 0,
+          estado: 'pagado'
+        });
+      } else {
+        individualContract = await ContratoIndividual.create({
+          id_contrato_general: id_contrato_general,
+          id_pasajero: id_pasajero,
+          cod_contrato: codigo_contrato_individual,
+          valor_contrato: valor,
+          pagos: 0,
+          recargos_pagos_segundo_vencimiento: 0,
+          estado: 'vigente'
+        });
+
+        const cuotasConId = cuotas.map((el) => ({ ...el, id_contrato_individual: individualContract.id }));
+
+        await Promise.all(cuotasConId.map(async (share) => Cuota.create({ ...share })));
+      }
+
+      // const generalContract = await ContratoGeneral.findByPk(id_contrato_general);
+      // const occupiedSeats = generalContract.asientos_ocupados + 1;
+      // await ContratoGeneral.update({ asientos_ocupados: occupiedSeats }, { where: { id: id_contrato_general } });
+      ContratoGeneral.update({ asientos_ocupados: literal('asientos_ocupados + 1') }, { where: { id: id_contrato_general } });
+      // ContratoGeneral.increment('seq', { by: 1, where: { id: id_contrato_general }});
+
+      if (cuotas.length > 7) {
+        return res.status(200).json({
+          status: 'success',
+          msg: 'Contrato individual creado con éxito. Redireccionando',
           data: {
             codigo: individualContract.cod_contrato,
-            id: individualContract.id,
-            redirectToPay: 'true'
+            id: individualContract.id
           }
         });
-      } catch (error) {
+      }
+
+      res.status(200).json({
+        status: 'success',
+        msg: 'Contrato individual creado con éxito. Redireccionando a pagos',
+        data: {
+          codigo: individualContract.cod_contrato,
+          id: individualContract.id,
+          redirectToPay: 'true'
+        }
+      });
+      /*  } catch (error) {
         res.status(409).json({
           status: 'error',
           msg: 'Ha ocurrido un error al intentar crear el contrato individual',
           error
         });
-      }
+      } */
     } else {
       res.status(400).json({
         status: 'bad request',
