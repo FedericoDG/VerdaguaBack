@@ -398,6 +398,7 @@ module.exports = {
         });
       }
 
+      // Verifica si es o no un pasajero liberado
       let individualContract;
 
       if (cuotas.length > 7) {
@@ -421,14 +422,13 @@ module.exports = {
           estado: 'vigente'
         });
 
+        // Le agrega a las cuotas el id del Contrato Individual
         const cuotasConId = cuotas.map((el) => ({ ...el, id_contrato_individual: individualContract.id }));
 
         await Promise.all(cuotasConId.map(async (share) => Cuota.create({ ...share })));
       }
 
-      // const generalContract = await ContratoGeneral.findByPk(id_contrato_general);
-      // const occupiedSeats = generalContract.asientos_ocupados + 1;
-      // await ContratoGeneral.update({ asientos_ocupados: occupiedSeats }, { where: { id: id_contrato_general } });
+      // Actualiza en número de asientos ocupado en el Contrato General
       ContratoGeneral.update({ asientos_ocupados: literal('asientos_ocupados + 1') }, { where: { id: id_contrato_general } });
       // ContratoGeneral.increment('seq', { by: 1, where: { id: id_contrato_general }});
 
