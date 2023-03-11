@@ -8,7 +8,12 @@ module.exports = {
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
     dialect: 'mysql',
-    dialectModule: require('mysql2')
+    dialectModule: require('mysql2'),
+    pool: {
+      max: 5,
+      min: 0,
+      idle: 10000
+    }
   },
   test: {
     username: process.env.DB_USERNAME,
@@ -17,7 +22,12 @@ module.exports = {
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
     dialect: 'mysql',
-    dialectModule: require('mysql2')
+    dialectModule: require('mysql2'),
+    pool: {
+      max: 5,
+      min: 0,
+      idle: 10000
+    }
   },
   production: {
     username: process.env.DB_USERNAME,
@@ -26,6 +36,11 @@ module.exports = {
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
     dialect: 'mysql',
-    dialectModule: require('mysql2')
+    dialectModule: require('mysql2'),
+    pool: {
+      max: 5,
+      min: 0,
+      idle: 10000
+    }
   }
 };
