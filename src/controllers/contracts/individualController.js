@@ -429,7 +429,7 @@ module.exports = {
       }
 
       // Actualiza en número de asientos ocupado en el Contrato General
-      ContratoGeneral.update({ asientos_ocupados: literal('asientos_ocupados + 1') }, { where: { id: id_contrato_general } });
+      await ContratoGeneral.update({ asientos_ocupados: literal('asientos_ocupados + 1') }, { where: { id: id_contrato_general } });
       // ContratoGeneral.increment('seq', { by: 1, where: { id: id_contrato_general }});
 
       if (cuotas.length > 7) {
