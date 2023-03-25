@@ -64,8 +64,9 @@ module.exports = {
       mercadopago.configure({ access_token: access_token_produccion });
 
       const { topic, id, cuota_id, id_contrato_individual, installments } = req.query;
+      console.log(req.query);
 
-      if (topic === 'merchant_order') {
+      /* if (topic === 'merchant_order') {
         const order = await mercadopago.merchant_orders.findById(id);
         // 'paid'
         // 'payment_in_process'
@@ -138,7 +139,7 @@ module.exports = {
             id_usuario: 1
           });
         }
-      }
+      } */
       res.status(200).send('ok');
     } catch (error) {
       res.status(409).json({

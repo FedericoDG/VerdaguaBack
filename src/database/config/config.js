@@ -9,6 +9,7 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
+    logging: false,
     pool: {
       max: 5,
       min: 0,
@@ -23,6 +24,7 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
+    logging: false,
     pool: {
       max: 5,
       min: 0,
@@ -37,6 +39,7 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
+    logging: false,
     pool: {
       max: 5,
       min: 0,
