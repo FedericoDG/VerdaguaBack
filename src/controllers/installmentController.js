@@ -4,7 +4,7 @@ module.exports = {
   getById: (req, res) => {
     res.status(200).json({
       status: 'success',
-      msg: 'Institución encontrada',
+      msg: 'Cuota encontrada',
       data: req.institution
     });
   },
@@ -69,13 +69,26 @@ module.exports = {
     const valor_contrato = resultado.valor_contrato;
     const pagosHechos = resultado.pagos;
 
-    if (valor_contrato === pagosHechos) {
+    console.log(pagosHechos);
+    console.log(Math.ceil(pagosHechos));
+    console.log(valor_contrato);
+
+    if (Number(valor_contrato) === Math.ceil(pagosHechos)) {
       await ContratoIndividual.update({ estado: 'pagado' }, { where: { id } });
     }
 
     res.status(200).json({
       status: 'success',
       msg: 'Pago creado con éxito. Redireccionando al contrato individual'
+    });
+  },
+  unblock: async (req, res) => {
+    const { id } = req.params;
+    await Cuota.update({ estado: 'pendiente' }, { where: { id } });
+    res.status(200).json({
+      status: 'success',
+      msg: 'Cuota desbloqueada',
+      data: req.institution
     });
   }
 };

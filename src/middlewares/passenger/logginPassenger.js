@@ -24,7 +24,7 @@ module.exports = {
       if (!contratoIndividual) {
         return res.status(404).json({
           status: 'not found',
-          msg: 'El número de cocumento no existe existe'
+          msg: 'El número de documento no existe existe'
         });
       } else {
         req.contratoIndividual = contratoIndividual;

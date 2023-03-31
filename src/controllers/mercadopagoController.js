@@ -31,7 +31,7 @@ module.exports = {
             ],
             installments: 1
           },
-          notification_url: `${process.env.URL_BACKEND}/mercadopago/webhook?cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
+          notification_url: `${process.env.URL_BACKEND}/mercadopago/webhook?source_news=webhooks&cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
         };
 
         const data = await mercadopago.preferences.create(preference);
@@ -57,6 +57,7 @@ module.exports = {
       });
     }
   },
+
   webHook: async (req, res) => {
     try {
       const { access_token_produccion } = await Parametro.findByPk(1);
@@ -64,9 +65,13 @@ module.exports = {
       mercadopago.configure({ access_token: access_token_produccion });
 
       const { topic, id, cuota_id, id_contrato_individual, installments } = req.query;
-      console.log(req.query);
 
-      /* if (topic === 'merchant_order') {
+      res.status(200).send('ok');
+
+      if (topic === 'merchant_order') {
+        console.log('**************** MERCADOPAGO ME MANDA INFO ****************');
+        console.log('***********************************************************');
+
         const order = await mercadopago.merchant_orders.findById(id);
         // 'paid'
         // 'payment_in_process'
@@ -75,10 +80,25 @@ module.exports = {
         // closed
         const { estado } = await Cuota.findByPk(cuota_id);
 
+        console.log('ID de la orden de MercadoPago: ' + id);
+        console.log('Estado de la orden de MercadoPago: ' + order.body.order_status);
+        console.log('Estado de la operación: ' + order.body.status);
+        console.log('Estado de cuota en mi base de datos: ' + estado);
+
+        if (order.body.order_status === 'payment_required' && order.body.status === 'opened' && estado === 'pendiente') {
+          await Cuota.update({ estado: 'en-proceso' }, { where: { id: cuota_id } });
+          console.log('-----------------------------------------------------------');
+          console.log('Nuevo estado de cuota en mi base de datos: en-proceso');
+          console.log('-----------------------------------------------------------');
+        }
+
         if (order.body.order_status === 'paid' && order.body.status === 'closed' && estado !== 'pagada') {
           await Cuota.update({ estado: 'pagada' }, { where: { id: cuota_id } });
+          const { valor_primer_vencimiento, valor_segundo_vencimiento, numero, estado } = await Cuota.findByPk(cuota_id);
 
-          const { valor_primer_vencimiento, valor_segundo_vencimiento, numero } = await Cuota.findByPk(cuota_id);
+          console.log('-----------------------------------------------------------');
+          console.log('Nuevo estado de cuota en mi base de datos: ' + estado);
+
           const contratoIndividual = await ContratoIndividual.findByPk(id_contrato_individual, {
             include: [
               {
@@ -117,8 +137,11 @@ module.exports = {
             attributes: ['valor_contrato', 'pagos']
           });
 
+          console.log('Nuevo pagos de contrato ind. en mi base de datos: ' + pagos);
+
           if (Number(valor_contrato) === Number(pagos)) {
             await ContratoIndividual.update({ estado: 'pagado' }, { where: { id: id_contrato_individual } });
+            console.log('Contrato individual pagado por completo');
           }
 
           let info = `Pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
@@ -138,9 +161,17 @@ module.exports = {
             info,
             id_usuario: 1
           });
+          console.log('Nuevo movimiento en mi base de datos: ' + Number(order.body.total_amount));
+          console.log('-----------------------------------------------------------');
         }
-      } */
-      res.status(200).send('ok');
+        console.log('***********************************************************');
+        console.log();
+      } else {
+        console.log('-_-_- QUERY -_-_-');
+        console.log(req.query);
+        console.log('-_-_- BODY -_-_-');
+        console.log(req.body);
+      }
     } catch (error) {
       res.status(409).json({
         status: 'error',
@@ -148,6 +179,7 @@ module.exports = {
       });
     }
   },
+
   getOrder: async (req, res) => {
     try {
       const { id } = req.params;
