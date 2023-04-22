@@ -46,9 +46,6 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
-    dialectOptions: {
-      socketPath: '/var/run/mysqld/mysqld.sock'
-    },
     logging: false,
     pool: {
       max: 5,
