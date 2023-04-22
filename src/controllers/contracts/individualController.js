@@ -100,146 +100,147 @@ module.exports = {
   },
   getByQuery: async (req, res) => {
     try {
-      const { code, document, list, lastname } = req.query;
-      let individualContracts;
+      setTimeout(async () => {
+        const { code, document, list, lastname } = req.query;
+        let individualContracts;
 
-      if (code) {
-        individualContracts = await ContratoIndividual.findAll({
-          where: {
-            cod_contrato: {
-              [Op.like]: `%${code}%`
-            }
-          },
-          include: [
-            {
-              model: ContratoGeneral,
-              as: 'contrato_general',
-              include: {
-                model: Institucion,
-                as: 'institucion'
+        if (code) {
+          individualContracts = await ContratoIndividual.findAll({
+            where: {
+              cod_contrato: {
+                [Op.like]: `%${code}%`
               }
             },
-            {
-              model: Pasajero,
-              as: 'pasajero',
-              include: {
-                model: Responsable,
-                as: 'responsable'
+            include: [
+              {
+                model: ContratoGeneral,
+                as: 'contrato_general',
+                include: {
+                  model: Institucion,
+                  as: 'institucion'
+                }
+              },
+              {
+                model: Pasajero,
+                as: 'pasajero',
+                include: {
+                  model: Responsable,
+                  as: 'responsable'
+                }
               }
-            }
-          ],
-          order: [['id', 'DESC']]
-        });
-      }
+            ],
+            order: [['id', 'DESC']]
+          });
+        }
 
-      if (document) {
-        individualContracts = await ContratoIndividual.findAll({
-          where: {
-            cod_contrato: {
-              [Op.like]: `%${document}%`
-            }
-          },
-          include: [
-            {
-              model: ContratoGeneral,
-              as: 'contrato_general',
-              include: {
-                model: Institucion,
-                as: 'institucion'
+        if (document) {
+          individualContracts = await ContratoIndividual.findAll({
+            where: {
+              cod_contrato: {
+                [Op.like]: `%${document}%`
               }
             },
-            {
-              model: Pasajero,
-              as: 'pasajero',
-              include: {
-                model: Responsable,
-                as: 'responsable'
+            include: [
+              {
+                model: ContratoGeneral,
+                as: 'contrato_general',
+                include: {
+                  model: Institucion,
+                  as: 'institucion'
+                }
+              },
+              {
+                model: Pasajero,
+                as: 'pasajero',
+                include: {
+                  model: Responsable,
+                  as: 'responsable'
+                }
               }
-            }
-          ],
-          order: [['id', 'DESC']]
-        });
-      }
+            ],
+            order: [['id', 'DESC']]
+          });
+        }
 
-      if (lastname) {
-        const passengers = await Pasajero.findAll({
-          where: {
-            apellido: {
-              [Op.like]: `%${lastname}%`
-            }
-          },
-          attributes: ['id'],
-          order: [['id', 'DESC']]
-        });
+        if (lastname) {
+          const passengers = await Pasajero.findAll({
+            where: {
+              apellido: {
+                [Op.like]: `%${lastname}%`
+              }
+            },
+            attributes: ['id'],
+            order: [['id', 'DESC']]
+          });
 
-        individualContracts = await Promise.all(
-          passengers.map(
-            async (el) =>
-              await ContratoIndividual.findAll({
-                where: {
-                  id_pasajero: el.id
-                },
-                include: [
-                  {
-                    model: ContratoGeneral,
-                    as: 'contrato_general',
-                    include: {
-                      model: Institucion,
-                      as: 'institucion'
-                    }
+          individualContracts = await Promise.all(
+            passengers.map(
+              async (el) =>
+                await ContratoIndividual.findAll({
+                  where: {
+                    id_pasajero: el.id
                   },
-                  {
-                    model: Pasajero,
-                    as: 'pasajero',
-                    include: {
-                      model: Responsable,
-                      as: 'responsable'
+                  include: [
+                    {
+                      model: ContratoGeneral,
+                      as: 'contrato_general',
+                      include: {
+                        model: Institucion,
+                        as: 'institucion'
+                      }
+                    },
+                    {
+                      model: Pasajero,
+                      as: 'pasajero',
+                      include: {
+                        model: Responsable,
+                        as: 'responsable'
+                      }
                     }
-                  }
-                ],
-                order: [['id', 'DESC']]
-              })
-          )
-        );
-        individualContracts = individualContracts.flat();
-      }
-
-      if (list) {
-        const parsedList = JSON.parse(list);
-        individualContracts = await Promise.all(
-          parsedList.map(
-            async (el) =>
-              await ContratoIndividual.findOne({
-                where: { id: el },
-                include: [
-                  {
-                    model: ContratoGeneral,
-                    as: 'contrato_general',
-                    include: {
-                      model: Institucion,
-                      as: 'institucion'
+                  ],
+                  order: [['id', 'DESC']]
+                })
+            )
+          );
+          individualContracts = individualContracts.flat();
+        }
+        if (list) {
+          const parsedList = JSON.parse(list);
+          individualContracts = await Promise.all(
+            parsedList.map(
+              async (el) =>
+                await ContratoIndividual.findOne({
+                  where: { id: el },
+                  include: [
+                    {
+                      model: ContratoGeneral,
+                      as: 'contrato_general',
+                      include: {
+                        model: Institucion,
+                        as: 'institucion'
+                      }
+                    },
+                    {
+                      model: Pasajero,
+                      as: 'pasajero'
                     }
-                  },
-                  {
-                    model: Pasajero,
-                    as: 'pasajero'
-                  }
-                ],
-                order: [['id', 'DESC']]
-              })
-          )
-        );
-      }
-      if (req.user.rol.name !== SUPER) {
-        const mapped = individualContracts?.map((result) => result.dataValues);
-        individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado' || el.estado === 'cancelado');
-      }
-      return res.status(200).json({
-        status: 'success',
-        msg: 'Contratos recuperados',
-        count: individualContracts?.length,
-        data: individualContracts || []
-      });
+                  ],
+                  order: [['id', 'DESC']]
+                })
+            )
+          );
+        }
+        if (req.user.rol.name !== SUPER) {
+          const mapped = individualContracts?.map((result) => result.dataValues);
+          individualContracts = mapped?.filter((el) => el.estado === 'vigente' || el.estado === 'pagado' || el.estado === 'cancelado');
+        }
+        return res.status(200).json({
+          status: 'success',
+          msg: 'Contratos recuperados',
+          count: individualContracts?.length,
+          data: individualContracts || []
+        });
+      }, 3000);
     } catch (error) {
       res.status(409).json({
         msg: 'Ha ocurrido un error al intentar recuperar los contratos',
@@ -351,40 +352,42 @@ module.exports = {
     });
   },
   installments: async (req, res) => {
-    const { id } = req.params;
-    const seniaYCuotas = await Cuota.findAll({
-      where: {
-        id_contrato_individual: id
-      },
-      include: [
-        {
-          model: ContratoIndividual,
-          as: 'contrato_individual',
-          include: [
-            {
-              model: Pasajero,
-              as: 'pasajero',
-              include: [
-                {
-                  model: Responsable,
-                  as: 'responsable'
-                }
-              ]
-            }
-          ]
+    setTimeout(async () => {
+      const { id } = req.params;
+      const seniaYCuotas = await Cuota.findAll({
+        where: {
+          id_contrato_individual: id
         },
-        {
-          model: Movimiento,
-          as: 'movimiento'
-        }
-      ],
-      order: [['numero', 'ASC']]
-    });
-    res.status(200).json({
-      status: 'success',
-      msg: 'Listado de cuotas',
-      data: seniaYCuotas
-    });
+        include: [
+          {
+            model: ContratoIndividual,
+            as: 'contrato_individual',
+            include: [
+              {
+                model: Pasajero,
+                as: 'pasajero',
+                include: [
+                  {
+                    model: Responsable,
+                    as: 'responsable'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            model: Movimiento,
+            as: 'movimiento'
+          }
+        ],
+        order: [['numero', 'ASC']]
+      });
+      res.status(200).json({
+        status: 'success',
+        msg: 'Listado de cuotas',
+        data: seniaYCuotas
+      });
+    }, 3000);
   },
   create: async (req, res) => {
     const errors = validationResult(req);
