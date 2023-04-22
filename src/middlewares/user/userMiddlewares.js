@@ -28,7 +28,8 @@ module.exports = {
     } catch (error) {
       res.status(409).json({
         status: 'error',
-        msg: 'Ha ocurrido un error al intentar verificar el usuario'
+        // msg: 'Ha ocurrido un error al intentar verificar el usuario'
+        msg: error
       });
     }
   },
