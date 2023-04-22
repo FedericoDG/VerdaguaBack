@@ -30,15 +30,24 @@ module.exports = {
               }
             ],
             installments: 1
-          },
-          notification_url: `${process.env.URL_BACKEND}/mercadopago/webhook?source_news=webhooks&cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`
+          }
         };
+
+        let notification_url;
+
+        if (Array.isArray(JSON.parse(items[0].id))) {
+          notification_url = `${process.env.URL_BACKEND}/mercadopago/webhooktwo?source_news=webhooks&cuotas_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`;
+        } else {
+          notification_url = `${process.env.URL_BACKEND}/mercadopago/webhook?source_news=webhooks&cuota_id=${items[0].id}&id_contrato_individual=${id_contrato_individual}&installments=${installments}`;
+        }
+
+        preference.notification_url = notification_url;
 
         const data = await mercadopago.preferences.create(preference);
 
         res.status(200).json({
           status: 'success',
-          msq: 'MERCADOPAGO post',
+          msg: 'MERCADOPAGO post',
           data
         });
       } catch (error) {
@@ -60,45 +69,24 @@ module.exports = {
 
   webHook: async (req, res) => {
     try {
-      const { access_token_produccion } = await Parametro.findByPk(1);
+      console.log('*********** NOTIFICACIÓN DE MERCADOPAGO ***********');
+
+      const { cuota_id, id_contrato_individual, installments } = req.query;
+      const { data, type } = req.body;
+      const access_token_produccion = process.env.ACCESS_TOKEN;
 
       mercadopago.configure({ access_token: access_token_produccion });
 
-      const { topic, id, cuota_id, id_contrato_individual, installments } = req.query;
+      if (type === 'payment') {
+        console.log(`ID: ${data.id}`);
+        const { body } = await mercadopago.payment.findById(data.id);
 
-      res.status(200).send('ok');
+        const { valor_primer_vencimiento, valor_segundo_vencimiento, numero, estado } = await Cuota.findByPk(cuota_id);
 
-      if (topic === 'merchant_order') {
-        console.log('**************** MERCADOPAGO ME MANDA INFO ****************');
-        console.log('***********************************************************');
+        if (body.status === 'approved' && estado === 'pendiente') {
+          console.log('ACTUALIZO LA CUOTA A PAGADA, CARGO MOVIMIENTO, ETC.');
 
-        const order = await mercadopago.merchant_orders.findById(id);
-        // 'paid'
-        // 'payment_in_process'
-        // 'payment_required'
-
-        // closed
-        const { estado } = await Cuota.findByPk(cuota_id);
-
-        console.log('ID de la orden de MercadoPago: ' + id);
-        console.log('Estado de la orden de MercadoPago: ' + order.body.order_status);
-        console.log('Estado de la operación: ' + order.body.status);
-        console.log('Estado de cuota en mi base de datos: ' + estado);
-
-        if (order.body.order_status === 'payment_required' && order.body.status === 'opened' && estado === 'pendiente') {
-          await Cuota.update({ estado: 'en-proceso' }, { where: { id: cuota_id } });
-          console.log('-----------------------------------------------------------');
-          console.log('Nuevo estado de cuota en mi base de datos: en-proceso');
-          console.log('-----------------------------------------------------------');
-        }
-
-        if (order.body.order_status === 'paid' && order.body.status === 'closed' && estado !== 'pagada') {
-          await Cuota.update({ estado: 'pagada' }, { where: { id: cuota_id } });
-          const { valor_primer_vencimiento, valor_segundo_vencimiento, numero, estado } = await Cuota.findByPk(cuota_id);
-
-          console.log('-----------------------------------------------------------');
-          console.log('Nuevo estado de cuota en mi base de datos: ' + estado);
-
+          // Creación del movimiento
           const contratoIndividual = await ContratoIndividual.findByPk(id_contrato_individual, {
             include: [
               {
@@ -109,7 +97,29 @@ module.exports = {
             order: [['id', 'DESC']]
           });
 
-          if (Number(valor_primer_vencimiento) < Number(order.body.total_amount)) {
+          let info = `Pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
+            Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
+          )}. Contrato: ${contratoIndividual.cod_contrato}. MP ID: ${data.id}`;
+
+          if (Number(numero) === 0) {
+            info = `Pago de seña. Saldo: ${formatCurrency(
+              Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
+            )}. Contrato: ${contratoIndividual.cod_contrato}. MP ID: ${data.id}`;
+          }
+
+          const { id } = await Movimiento.create({
+            importe: Number(body.transaction_amount),
+            tipo: 'ingreso',
+            forma_pago: 'mercadopago',
+            info,
+            id_usuario: 1
+          });
+
+          // Actualización Cuota
+          await Cuota.update({ estado: 'pagada', id_movimiento: id }, { where: { id: cuota_id } });
+
+          // Actualización Contrato Individual
+          if (Number(valor_primer_vencimiento) < Number(body.transaction_amount)) {
             const newPagos = Number(contratoIndividual.pagos) + Number(valor_primer_vencimiento);
             const newReacargos =
               Number(contratoIndividual.recargos_pagos_segundo_vencimiento) +
@@ -133,45 +143,143 @@ module.exports = {
             );
           }
 
+          // Actualización Contrato Individual (caso: pagado por completo)
           const { valor_contrato, pagos } = await ContratoIndividual.findByPk(id_contrato_individual, {
             attributes: ['valor_contrato', 'pagos']
           });
 
-          console.log('Nuevo pagos de contrato ind. en mi base de datos: ' + pagos);
-
           if (Number(valor_contrato) === Number(pagos)) {
             await ContratoIndividual.update({ estado: 'pagado' }, { where: { id: id_contrato_individual } });
-            console.log('Contrato individual pagado por completo');
           }
-
-          let info = `Pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
-            Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
-          )}. Contrato: ${contratoIndividual.cod_contrato}. MP Orden: ${id}`;
-
-          if (Number(numero) === 0) {
-            info = `Pago de seña. Saldo: ${formatCurrency(
-              Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
-            )}. Contrato: ${contratoIndividual.cod_contrato}. MP Orden: ${id}`;
+        } else {
+          if (body.status === 'rejected') {
+            console.log('NO ACTUALIZO - ESTADO DEL PAGO: RECHAZADO');
+          } else if (estado !== 'pendiente') {
+            console.log('NO ACTUALIZO - CUOTA YA COBRADA');
+          } else {
+            console.log('???????????????????????????????????????????????????');
+            console.log('AVISAR AL DESARROLLADOR - CASO 2');
+            console.log('???????????????????????????????????????????????????');
+            console.log(req.query);
+            console.log(req.body);
           }
-
-          await Movimiento.create({
-            importe: Number(order.body.total_amount),
-            tipo: 'ingreso',
-            forma_pago: 'mercadopago',
-            info,
-            id_usuario: 1
-          });
-          console.log('Nuevo movimiento en mi base de datos: ' + Number(order.body.total_amount));
-          console.log('-----------------------------------------------------------');
         }
-        console.log('***********************************************************');
-        console.log();
       } else {
-        console.log('-_-_- QUERY -_-_-');
+        console.log('???????????????????????????????????????????????????');
+        console.log('AVISAR AL DESARROLLADOR - CASO 1');
+        console.log('???????????????????????????????????????????????????');
         console.log(req.query);
-        console.log('-_-_- BODY -_-_-');
         console.log(req.body);
       }
+
+      console.log('***************************************************');
+
+      res.status(200).send('OK');
+    } catch (error) {
+      res.status(409).json({
+        status: 'error',
+        msq: 'Error Mercadopago'
+      });
+    }
+  },
+
+  webHookTwo: async (req, res) => {
+    try {
+      console.log('*** NOTIFICACIÓN DE MERCADOPAGO - PAGO COMPLETO ***');
+
+      let { cuotas_id, id_contrato_individual, installments } = req.query;
+      cuotas_id = JSON.parse(cuotas_id);
+
+      const { data, type } = req.body;
+      const access_token_produccion = process.env.ACCESS_TOKEN;
+
+      mercadopago.configure({ access_token: access_token_produccion });
+
+      if (type === 'payment') {
+        console.log(`ID: ${data.id}`);
+        const { body } = await mercadopago.payment.findById(data.id);
+
+        for (const cuota_id of cuotas_id) {
+          const { valor_primer_vencimiento, valor_segundo_vencimiento, numero, estado } = await Cuota.findByPk(cuota_id);
+
+          if (body.status === 'approved' && estado === 'pendiente') {
+            console.log('ACTUALIZO LA CUOTA A PAGADA, CARGO MOVIMIENTO, ETC.');
+
+            // Creación del movimiento
+            const contratoIndividual = await ContratoIndividual.findByPk(id_contrato_individual, {
+              include: [
+                {
+                  model: Pasajero,
+                  as: 'pasajero'
+                }
+              ],
+              order: [['id', 'DESC']]
+            });
+
+            let info = `Pago de cuota ${numero} de ${installments}. Saldo: ${formatCurrency(
+              Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
+            )}. Contrato: ${contratoIndividual.cod_contrato}. MP ID: ${data.id}`;
+
+            if (Number(numero) === 0) {
+              info = `Pago de seña. Saldo: ${formatCurrency(
+                Number(contratoIndividual.valor_contrato) - Number(contratoIndividual.pagos) - Number(valor_primer_vencimiento)
+              )}. Contrato: ${contratoIndividual.cod_contrato}. MP ID: ${data.id}`;
+            }
+
+            const { id } = await Movimiento.create({
+              importe: Number(valor_primer_vencimiento),
+              tipo: 'ingreso',
+              forma_pago: 'mercadopago',
+              info,
+              id_usuario: 1
+            });
+
+            // Actualización Cuota
+            await Cuota.update({ estado: 'pagada', id_movimiento: id }, { where: { id: cuota_id } });
+
+            // Actualización Contrato Individual
+            const newPagos = Number(contratoIndividual.pagos) + Number(valor_primer_vencimiento);
+
+            await ContratoIndividual.update(
+              {
+                pagos: newPagos
+              },
+              { where: { id: id_contrato_individual } }
+            );
+
+            // Actualización Contrato Individual (caso: pagado por completo)
+            const { valor_contrato, pagos } = await ContratoIndividual.findByPk(id_contrato_individual, {
+              attributes: ['valor_contrato', 'pagos']
+            });
+
+            if (Number(valor_contrato) === Number(pagos)) {
+              await ContratoIndividual.update({ estado: 'pagado' }, { where: { id: id_contrato_individual } });
+            }
+          } else {
+            if (body.status === 'rejected') {
+              console.log('NO ACTUALIZO - ESTADO DEL PAGO: RECHAZADO');
+            } else if (estado !== 'pendiente') {
+              console.log('NO ACTUALIZO - CUOTA YA COBRADA');
+            } else {
+              console.log('???????????????????????????????????????????????????');
+              console.log('AVISAR AL DESARROLLADOR - CASO 2');
+              console.log('???????????????????????????????????????????????????');
+              console.log(req.query);
+              console.log(req.body);
+            }
+          }
+        }
+      } else {
+        console.log('???????????????????????????????????????????????????');
+        console.log('AVISAR AL DESARROLLADOR - CASO 1');
+        console.log('???????????????????????????????????????????????????');
+        console.log(req.query);
+        console.log(req.body);
+      }
+
+      console.log('***************************************************');
+
+      res.status(200).send('OK');
     } catch (error) {
       res.status(409).json({
         status: 'error',
@@ -188,7 +296,8 @@ module.exports = {
 
       mercadopago.configure({ access_token: access_token_produccion });
 
-      const data = await mercadopago.merchant_orders.findById(id);
+      // const data = await mercadopago.merchant_orders.findById(id);
+      const data = await mercadopago.payment.findById(id);
 
       res.status(200).json({
         status: 'success',

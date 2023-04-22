@@ -15,7 +15,7 @@ module.exports = {
           }
         };
       }
-      const listUsers = await Usuario.findAll({
+      let listUsers = await Usuario.findAll({
         where: query,
         attributes: { exclude: ['password'] },
         include: [
@@ -24,7 +24,7 @@ module.exports = {
             as: 'rol'
           }
         ],
-        order: [['id', 'DESC']]
+        order: [['id', 'ASC']]
       });
       res.status(200).json({
         status: 'success',

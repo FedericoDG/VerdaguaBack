@@ -9,6 +9,10 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
+    // DESCOMENTAR LAS 3 LINEAS DE ABAJO PARA CORRERLO EN UBUNTU
+    // dialectOptions: {
+    //   socketPath: '/var/run/mysqld/mysqld.sock'
+    // },
     logging: false,
     pool: {
       max: 5,
@@ -24,6 +28,9 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     dialectModule: require('mysql2'),
+    dialectOptions: {
+      socketPath: '/var/run/mysqld/mysqld.sock'
+    },
     logging: false,
     pool: {
       max: 5,

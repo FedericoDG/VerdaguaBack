@@ -9,19 +9,24 @@ module.exports = {
     });
   },
   createPay: async (req, res) => {
-    const { id, cuota, movimiento, contratoIndividual, ticket } = req.body;
+    const { id, cuotas, movimiento, contratoIndividual, ticket } = req.body;
 
     const { descuento, recargo, diferencia_descripcion, info_tarjeta_transferencia, ...rest } = movimiento;
 
-    await Cuota.update({ estado: cuota.estado, ticket }, { where: { id: cuota.id } });
+    let movement;
+    if (info_tarjeta_transferencia) {
+      movement = await Movimiento.create({ ...rest, info: `${rest.info}. ${info_tarjeta_transferencia}`, id_usuario: req.user.id });
+    } else {
+      movement = await Movimiento.create({ ...rest, id_usuario: req.user.id });
+    }
 
     await Parametro.update({ ticket: Number(ticket) + 1 }, { where: { id: 1 } });
 
-    if (info_tarjeta_transferencia) {
-      await Movimiento.create({ ...rest, info: `${rest.info}. ${info_tarjeta_transferencia}`, id_usuario: req.user.id });
-    } else {
-      await Movimiento.create({ ...rest, id_usuario: req.user.id });
-    }
+    await Promise.all(
+      cuotas.map(
+        async (cuota) => await Cuota.update({ estado: cuota.estado, id_movimiento: movement.id, ticket }, { where: { id: cuota.id } })
+      )
+    );
 
     if (Number(descuento) > 0) {
       await Movimiento.create({
@@ -69,12 +74,15 @@ module.exports = {
     const valor_contrato = resultado.valor_contrato;
     const pagosHechos = resultado.pagos;
 
-    console.log(pagosHechos);
-    console.log(Math.ceil(pagosHechos));
-    console.log(valor_contrato);
-
-    if (Number(valor_contrato) === Math.ceil(pagosHechos)) {
-      await ContratoIndividual.update({ estado: 'pagado' }, { where: { id } });
+    if (Number(valor_contrato) === Math.round(pagosHechos)) {
+      console.log('TODOS LOS PAGOS HECHOS!!!');
+      if (Number(valor_contrato) !== Number(pagosHechos)) {
+        console.log('El redondeo: ', Number(valor_contrato), Number(pagosHechos));
+        await ContratoIndividual.update({ estado: 'pagado', pagos: Number(valor_contrato) }, { where: { id } });
+      } else {
+        console.log('SIN redondeo');
+        await ContratoIndividual.update({ estado: 'pagado' }, { where: { id } });
+      }
     }
 
     res.status(200).json({

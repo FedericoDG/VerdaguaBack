@@ -372,6 +372,10 @@ module.exports = {
               ]
             }
           ]
+        },
+        {
+          model: Movimiento,
+          as: 'movimiento'
         }
       ],
       order: [['numero', 'ASC']]

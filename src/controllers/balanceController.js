@@ -4,7 +4,7 @@ const { SUPER } = require('../constants/roles');
 
 module.exports = {
   get: async (req, res) => {
-    const { from, to, info } = req.query;
+    const { from, to, info, iduser } = req.query;
 
     const start = from.concat(' 00:00:00');
     const end = to.concat(' 23:59:59');
@@ -23,17 +23,32 @@ module.exports = {
     };
 
     if (req.user.rol.name === SUPER) {
-      where = {
-        created_at: {
-          [Op.and]: {
-            [Op.gte]: start,
-            [Op.lte]: end
+      if (iduser !== '1') {
+        where = {
+          created_at: {
+            [Op.and]: {
+              [Op.gte]: start,
+              [Op.lte]: end
+            }
+          },
+          info: {
+            [Op.like]: `%${info}%`
+          },
+          id_usuario: iduser
+        };
+      } else {
+        where = {
+          created_at: {
+            [Op.and]: {
+              [Op.gte]: start,
+              [Op.lte]: end
+            }
+          },
+          info: {
+            [Op.like]: `%${info}%`
           }
-        },
-        info: {
-          [Op.like]: `%${info}%`
-        }
-      };
+        };
+      }
     }
 
     const movements = await Movimiento.findAll({
