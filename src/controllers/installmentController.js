@@ -15,7 +15,7 @@ module.exports = {
 
     let movement;
     if (info_tarjeta_transferencia) {
-      movement = await Movimiento.create({ ...rest, info: `${rest.info}. ${info_tarjeta_transferencia}`, id_usuario: req.user.id });
+      movement = await Movimiento.create({ ...rest, info: `${rest.info} ${info_tarjeta_transferencia}.`, id_usuario: req.user.id });
     } else {
       movement = await Movimiento.create({ ...rest, id_usuario: req.user.id });
     }

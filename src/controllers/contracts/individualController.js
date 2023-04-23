@@ -516,7 +516,7 @@ module.exports = {
               importe: total_return,
               tipo: 'egreso',
               forma_pago: 'egreso',
-              info: `Devolución de cuotas por eliminación de Contrato Individual ${individualContract.cod_contrato}`,
+              info: `Devolución de cuotas por eliminación de Contrato Individual ${individualContract.cod_contrato}.`,
               id_usuario: user.id
             });
           }
